@@ -9,8 +9,8 @@ Pcl_tutorial::~Pcl_tutorial(){
 }
 
 void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
-                                        ,pcl::PointCloud<PointT> &cloud_cylinder
-                                        ,pcl::PointCloud<PointT> &cloud_plane)
+                                        ,pcl::PointCloud<PointT>::Ptr cloud_cylinder
+                                        ,pcl::PointCloud<PointT>::Ptr cloud_plane)
 {
 // All the objects needed
   pcl::PassThrough<PointT> pass;
@@ -28,6 +28,9 @@ void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
   pcl::ModelCoefficients::Ptr coefficients_plane (new pcl::ModelCoefficients), coefficients_cylinder (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr inliers_plane (new pcl::PointIndices), inliers_cylinder (new pcl::PointIndices);
 
+  // Read in the cloud data
+  std::cerr << "PointCloud has: " << cloud->points.size () << " data points." << std::endl;
+
   // Build a passthrough filter to remove spurious NaNs
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
@@ -39,8 +42,8 @@ void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
   ne.setSearchMethod (tree);
   ne.setInputCloud (cloud_filtered);
   ne.setKSearch (50);
-  ne.compute (*cloud_normals);   
-  
+  ne.compute (*cloud_normals);
+
   // Create the segmentation object for the planar model and set all the parameters
   seg.setOptimizeCoefficients (true);
   seg.setModelType (pcl::SACMODEL_NORMAL_PLANE);
@@ -60,8 +63,8 @@ void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
   extract.setNegative (false);
 
   // Write the planar inliers to disk
-//   pcl::PointCloud<PointT>::Ptr cloud_plane (new pcl::PointCloud<PointT>());
-  extract.filter (cloud_plane);
+  extract.filter (*cloud_plane);
+  std::cerr << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
 
   // Remove the planar inliers, extract the rest
   extract.setNegative (true);
@@ -90,14 +93,28 @@ void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
   extract.setInputCloud (cloud_filtered2);
   extract.setIndices (inliers_cylinder);
   extract.setNegative (false);
-//   pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
-  extract.filter (cloud_cylinder);
-  if (cloud_cylinder.points.empty ()) 
+  extract.filter (*cloud_cylinder);
+  if (cloud_cylinder->points.empty ()) 
     std::cerr << "Can't find the cylindrical component." << std::endl;
   else
   {
-	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder.points.size () << " data points." << std::endl;
-	//   writer.write ("table_scene_mug_stereo_textured_cylinder.pcd", *cloud_cylinder, false);
-  }
-  
+	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
+  }  
+}
+
+void Pcl_tutorial::passthrough(pcl::PointCloud<PointT>::Ptr cloud
+                              ,pcl::PointCloud<PointT>::Ptr cloud_filtered
+                              ,char* direction,float coordinate_min, float coordinate_Max)
+{
+  std::cerr << "Cloud before filtering size: " << cloud->points.size () << std::endl;
+
+  // Create the filtering object
+  pcl::PassThrough<pcl::PointXYZ> pass;
+  pass.setInputCloud (cloud);
+  pass.setFilterFieldName (direction);
+  pass.setFilterLimits (coordinate_min, coordinate_Max);
+  //pass.setFilterLimitsNegative (true);
+  pass.filter (*cloud_filtered);
+
+  std::cerr << "Cloud after filtering: " << cloud_filtered->points.size () << std::endl;
 }

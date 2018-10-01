@@ -201,4 +201,4 @@ include_directories(
 
 add_executable(node src/node.cpp 
                     src/pcl_tutorial.cpp src/pcl_tutorial.h)
-target_link_libraries(node ${catkin_LIBRARIES})
+target_link_libraries(node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
