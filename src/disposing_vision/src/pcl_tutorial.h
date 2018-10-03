@@ -19,7 +19,19 @@
 
 //passthrough
 #include <pcl/filters/passthrough.h>
+
+//PCLVisualizer
+#include <boost/thread/thread.hpp>
+#include <pcl/common/common_headers.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/console/parse.h>
+
+//Downsampling
+#include <pcl/filters/voxel_grid.h>
+
+
 typedef pcl::PointXYZ PointT;
+typedef pcl::PointXYZRGB PointTRGB;
 
 class Pcl_tutorial
 {
@@ -33,9 +45,17 @@ public:
                               ,pcl::PointCloud<PointT>::Ptr cloud_cylinder
                               ,pcl::PointCloud<PointT>::Ptr cloud_plane);
 
-    void passthrough(pcl::PointCloud<PointT>::Ptr cloud
-                    ,pcl::PointCloud<PointT>::Ptr cloud_filtered
+    void passthrough(pcl::PointCloud<PointTRGB>::Ptr cloud
+                    ,pcl::PointCloud<PointTRGB>::Ptr cloud_filtered
                     ,char* direction,float coordinate_min, float coordinate_Max);
+
+    void calculate_normal(pcl::PointCloud<PointTRGB>::Ptr point_cloud_ptr
+                         ,pcl::PointCloud<pcl::PointNormal>::Ptr cloud_normals1);
+
+    void downsampling(pcl::PointCloud<PointTRGB>::Ptr cloud
+                    , pcl::PointCloud<PointTRGB>::Ptr cloud_filtered
+                    , float range);
+
 };
 
 #endif //PCL_TUTORIAL_H

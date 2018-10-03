@@ -102,14 +102,14 @@ void Pcl_tutorial::cylinder_segmentation(pcl::PointCloud<PointT>::Ptr cloud
   }  
 }
 
-void Pcl_tutorial::passthrough(pcl::PointCloud<PointT>::Ptr cloud
-                              ,pcl::PointCloud<PointT>::Ptr cloud_filtered
+void Pcl_tutorial::passthrough(pcl::PointCloud<PointTRGB>::Ptr cloud
+                              ,pcl::PointCloud<PointTRGB>::Ptr cloud_filtered
                               ,char* direction,float coordinate_min, float coordinate_Max)
 {
   std::cerr << "Cloud before filtering size: " << cloud->points.size () << std::endl;
 
   // Create the filtering object
-  pcl::PassThrough<pcl::PointXYZ> pass;
+  pcl::PassThrough<PointTRGB> pass;
   pass.setInputCloud (cloud);
   pass.setFilterFieldName (direction);
   pass.setFilterLimits (coordinate_min, coordinate_Max);
@@ -117,4 +117,22 @@ void Pcl_tutorial::passthrough(pcl::PointCloud<PointT>::Ptr cloud
   pass.filter (*cloud_filtered);
 
   std::cerr << "Cloud after filtering: " << cloud_filtered->points.size () << std::endl;
+}
+
+void Pcl_tutorial::calculate_normal(pcl::PointCloud<PointTRGB>::Ptr point_cloud_ptr
+                                   ,pcl::PointCloud<pcl::PointNormal>::Ptr cloud_normals1)
+{
+  pcl::NormalEstimation<PointTRGB, pcl::PointNormal> ne;
+  ne.setInputCloud (point_cloud_ptr);
+  pcl::search::KdTree<PointTRGB>::Ptr tree (new pcl::search::KdTree<PointTRGB> ());
+  ne.setSearchMethod (tree);
+  ne.setRadiusSearch (0.01);
+  ne.compute (*cloud_normals1);
+}
+
+void Pcl_tutorial::downsampling(pcl::PointCloud<PointTRGB>::Ptr cloud
+                              , pcl::PointCloud<PointTRGB>::Ptr cloud_filtered
+                              , float range)
+{
+  
 }
